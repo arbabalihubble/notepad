@@ -26,7 +26,7 @@ export default function Page({ params }) {
   useEffect(() => {
     const getNote = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/notes/${params.note}/`);
+        const response = await fetch(`http://chat42:8000/notes/${params.note}/`);
         if (response.ok) {
           const data = await response.json();
           console.log('data: ', data);

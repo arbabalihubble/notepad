@@ -56,23 +56,29 @@ export default function Page({ params }) {
     updateNote();
   };
   useEffect(() => {
-    const stringWithoutHTML = value.replace(/<\/?[^>]+(>|$)/g, '');
-    let words = stringWithoutHTML.split(/[ \t\n\r!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]+/);
-    words = words.filter((word) => {
-      if (word !== ''){
-        return word;
+    function getStats(){
+      if (typeof value !== 'string'){
+        return;
       }
-    });
-    const wordCount = words;
-    const characterCount = words.join('').length;
-    setStats({
-      words: wordCount.length,
-      characters: characterCount
-    })
-    if (!changesMade && startValue !== value){
+      const stringWithoutHTML = value.replace(/<\/?[^>]+(>|$)/g, '');
+      let words = stringWithoutHTML.split(/[ \t\n\r!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]+/);
+      words = words.filter((word) => {
+        if (word !== '') {
+          return word;
+        }
+      });
+      const wordCount = words;
+      const characterCount = words.join('').length;
+      setStats({
+        words: wordCount.length,
+        characters: characterCount
+      })
+      if (!changesMade && startValue !== value) {
 
-      setChangesMade(true)
+        setChangesMade(true)
+      }
     }
+    getStats();
   }, [value])
   const handleQuillRef = (ref) => {
     if (ref) {
