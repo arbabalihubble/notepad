@@ -5,9 +5,15 @@ import 'react-quill/dist/quill.snow.css';
 import { MdOutlineSave } from "react-icons/md";
 import { FaLink, FaShareFromSquare } from "react-icons/fa6";
 import ActionItem from '../../components/Actions/ActionItem';
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:8000");
+
+
 import logo from '../../assets/imgs/logo.png'
 export default function Page({ params }) {
   const [value, setValue] = useState('');
+  const [shareable, setShareable] = useState('');
   const [stats, setStats] = useState({
     words: 0,
     characters: 0
@@ -15,14 +21,38 @@ export default function Page({ params }) {
   const [startValue, setStartValue] = useState('');
   const quillRef = useRef();
   const [changesMade, setChangesMade] = useState(false);
+
+  useEffect(() => {
+    // const socket = io("http://localhost:8000");
+    const roomName = params.note;  // you can set this based on the slug or other criteria
+    socket.emit("join_room", roomName);
+    socket.on("note_updated", (data) => {
+      console.log(data);
+      // Update the React component state, display a notification, or any other action
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  useEffect(() => {
+
+    socket.on("note_updated", (data) => {
+      console.log(data);
+      // Update the React component state, display a notification, or any other action
+    });
+
+  }, [socket]);
+
   useEffect(() => {
     const getNote = async () => {
       try {
         const response = await fetch(`http://localhost:8000/notes/${params.note}/`);
         if (response.ok) {
           const data = await response.json();
-          setValue(data);
-          setStartValue(data);
+          setValue(data.note);
+          setShareable(data.shareable);
+          setStartValue(data.note);
           setChangesMade(false);
         }
       } catch (error) {
@@ -113,7 +143,7 @@ export default function Page({ params }) {
           <ActionItem
             Icon={FaShareFromSquare}
             linkText={'Shareable Link'}
-            link={`share/${params.note}`}
+            link={`share/${shareable}`}
           />
         </div>
         <ReactQuill

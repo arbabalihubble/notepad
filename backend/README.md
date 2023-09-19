@@ -1,5 +1,5 @@
 ### Installation
-`pip install fastapi uvicorn requests sqlalchemy python-multipart passlib bcrypt`
+`pip install fastapi uvicorn requests sqlalchemy python-multipart passlib bcrypt python-socketio "aiohttp>=3.7,<4.0"`
 ## FastAPI PIP Package
 `pip install fastapi uvicorn`
 `pip3 install requests`
