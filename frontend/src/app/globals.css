@@ -7,3 +7,33 @@
     max-height: 70vh;
     overflow-y: auto;
 }
+
+/* Track */
+::-webkit-scrollbar {
+  width: 10px; /* Width of the scrollbar */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #bdbdbd; /* Color of the scrollbar handle */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #8e8e8e; /* Color of the scrollbar handle on hover */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #e8e8e8; /* Color of the scrollbar track on hover */
+}
+
+/* Track on hover */
+::-webkit-scrollbar-track:hover {
+  background: #f1f1f1; /* Color of the scrollbar track on hover */
+}
+
+/* Track on active */
+::-webkit-scrollbar-track:active {
+  background: #ccc; /* Color of the scrollbar track when clicked */
+}
