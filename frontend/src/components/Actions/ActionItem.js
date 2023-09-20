@@ -1,13 +1,15 @@
 import copy from 'clipboard-copy';
-const ActionItem = ({ Icon, linkText, link }) => {
-  const currentUrl = window.location.href;
-  const base = currentUrl.split('/');
-  base.length = base.length - 1;
-  base[base.length] = link
-  const handleCopy = () => {
-    // Copy the content to the clipboard'
-   
+import { useEffect, useState } from 'react';
 
+const ActionItem = ({ Icon, linkText, link }) => {
+  const [currentUrl, setCurrentUrl] = useState();
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  },[])
+  const handleCopy = () => {
+    const base = currentUrl.split('/');
+    base.length = base.length - 1;
+    base[base.length] = link;
     copy(base.join('/'))
       .then(() => {
       })

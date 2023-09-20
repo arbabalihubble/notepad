@@ -1,16 +1,19 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import { MdOutlineSave } from "react-icons/md";
 import { FaLink, FaShareFromSquare } from "react-icons/fa6";
 import ActionItem from '../../components/Actions/ActionItem';
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:8000");
-
-
 import logo from '../../assets/imgs/logo.png'
+import { io } from "socket.io-client";
+import { getWordCharacterCount } from '@/lib/helper/helper';
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+import dynamic from "next/dynamic";
+const MDEditor = dynamic(
+  () => import("@uiw/react-md-editor"),
+  { ssr: false }
+);
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const socket = io(process.env.NEXT_PUBLIC_API_URL);
 export default function Page({ params }) {
   const [value, setValue] = useState('');
   const [shareable, setShareable] = useState('');
@@ -23,31 +26,23 @@ export default function Page({ params }) {
   const [changesMade, setChangesMade] = useState(false);
 
   useEffect(() => {
-    // const socket = io("http://localhost:8000");
-    const roomName = params.note;  // you can set this based on the slug or other criteria
+    const roomName = params.note;
     socket.emit("join_room", roomName);
     socket.on("note_updated", (data) => {
-      console.log(data);
-      // Update the React component state, display a notification, or any other action
     });
-
     return () => {
       socket.disconnect();
     };
   }, []);
   useEffect(() => {
-
     socket.on("note_updated", (data) => {
-      console.log(data);
-      // Update the React component state, display a notification, or any other action
     });
-
-  }, [socket]);
+  });
 
   useEffect(() => {
     const getNote = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/notes/${params.note}/`);
+        const response = await fetch(`${apiUrl}/notes/${params.note}`);
         if (response.ok) {
           const data = await response.json();
           setValue(data.note);
@@ -56,59 +51,23 @@ export default function Page({ params }) {
           setChangesMade(false);
         }
       } catch (error) {
-        console.error('Error fetching note:', error);
       }
     };
     getNote();
-  }, [params.note]);
-
-  const updateNote = async () => {
-    setChangesMade(false);
-    try {
-      const response = await fetch(`http://localhost:8000/notes/${params.note}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          note: value
-        })
-      });
-      if (response.ok) {
-
-      } else {
-      }
-    } catch (error) {
-    }
-  };
-
-  const handleSave = () => {
-    updateNote();
-  };
+  }, []);
   useEffect(() => {
     function getStats(){
-      if (typeof value !== 'string'){
-        return;
-      }
-      const stringWithoutHTML = value.replace(/<\/?[^>]+(>|$)/g, '');
-      let words = stringWithoutHTML.split(/[ \t\n\r!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]+/);
-      words = words.filter((word) => {
-        if (word !== '') {
-          return word;
-        }
-      });
-      const wordCount = words;
-      const characterCount = words.join('').length;
-      setStats({
-        words: wordCount.length,
-        characters: characterCount
-      })
+      setStats(getWordCharacterCount(value))
       if (!changesMade && startValue !== value) {
 
         setChangesMade(true)
       }
     }
     getStats();
+    socket.emit("note_updated", {
+      slug: params.note,
+      value: value
+    });
   }, [value])
   const handleQuillRef = (ref) => {
     if (ref) {
@@ -118,21 +77,12 @@ export default function Page({ params }) {
     }
   };
 
-
-
-
   return (
     <div className={`container mx-auto min-h-screen py-10 flex flex-col w-full items-center`}>
       <div className="w-full">
         <div className="p-4 py-2 bg-white border-[1px] border-b-0 border-gray-300 flex items-center justify-center w-full space-x-8">
           <div className="">
             <img src={logo.src} width={'100'} />
-          </div>
-          <div
-            className={`text-xl ${changesMade ? 'text-indigo-800 cursor-pointer' : 'text-gray-600 cursor-default'}`}
-            onClick={handleSave}
-          >
-            <MdOutlineSave />
           </div>
           <ActionItem
             Icon={FaLink}
@@ -146,13 +96,26 @@ export default function Page({ params }) {
             link={`share/${shareable}`}
           />
         </div>
-        <ReactQuill
+        {/* <ReactQuill
           theme="snow"
           value={value}
           onChange={setValue}
           className="w-full bg-white"
           ref={handleQuillRef}
-        />
+        /> */}
+        <div>
+          <div data-color-mode="light">
+            <div className="wmde-markdown-var"> </div>
+            <MDEditor
+              value={value}
+              onChange={setValue}
+              height={600}
+              overflow={false}
+              autoFocus={true}
+              
+            />
+          </div>
+        </div>
         <div className="p-4 py-2 bg-white border-[1px] border-t-0 border-gray-300 flex items-center justify-center w-full space-x-8">
           <div className="flex space-x-5 text-xs text-gray-400">
             <div className="">
@@ -164,9 +127,9 @@ export default function Page({ params }) {
                 stats.words
               }
             </div>
-            <div className="">              
+            <div className="">
               <strong>
-                Characters: 
+                Characters:
               </strong>
               <pre className='inline-block'> </pre>
               {
